@@ -1,3 +1,3 @@
 setTimeout(function() {
   throw new Exception("FAILURE")
-}, 3000)
+}, 20000)

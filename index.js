@@ -5,7 +5,7 @@ var markdown = require('nodemailer-markdown').markdown
 var config = require('yamljs').load(__dirname + '/config.yml')
 var _ = require('lodash.template')
 var template = require('fs').readFileSync(config.template)
-var async = require('async')
+// var async = require('async')
 var util = require('util')
 var p = require('path')
 
@@ -30,27 +30,38 @@ function compile(template, data) {
  * Send an email through smtp transport
  * @param object opts
  */
+let mailList = config.mailList;
 function sendMail(opts) {
 
   if(!opts.subject || !opts.text) {
     throw new ReferenceError("No text or subject to be mailed")
   }
 
-  var opts = {
-    from: opts.from || config.mail.from,
-    to: opts.to ? opts.to : config.mail.to,
-    subject: opts.subject,
-    markdown: opts.text,
-    attachments: opts.attachments || []
+  var op = opts;
+  mailList.forEach(function(to, i) {
+    var opts = {
+    from: op.from || config.mail.from,
+    subject: op.subject,
+    markdown: op.text,
+    to: to,
+    attachments: op.attachments || []
   }
+    console.log(opts.from+"=="+opts.to+"=="+opts.subject);
 
-  transporter.sendMail(opts, function(err, info) {
+  
+      transporter.sendMail(opts, function(err, info) {
     if(err) {
       console.error(err)
     }
-
     console.log('Mail sent', info)
   })
+    
+  });
+  
+// console.log(opts);    
+  
+
+  
 }
 
 /**
