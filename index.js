@@ -11,7 +11,7 @@ var p = require('path')
 
 var transporter = nodemailer.createTransport(require('nodemailer-smtp-transport')(config.smtp))
 
-transporter.use('compile', markdown({useEmbeddedImages: true}))
+transporter.use('compile', markdown({ useEmbeddedImages: true }))
 
 var queue = []
 var timeout = null
@@ -22,8 +22,8 @@ var timeout = null
  * @param object data
  */
 function compile(template, data) {
-    var s = _(template)
-    return s(data)
+  var s = _(template)
+  return s(data)
 }
 
 /**
@@ -33,35 +33,35 @@ function compile(template, data) {
 let mailList = config.mailList;
 function sendMail(opts) {
 
-  if(!opts.subject || !opts.text) {
+  if (!opts.subject || !opts.text) {
     throw new ReferenceError("No text or subject to be mailed")
   }
 
   var op = opts;
-  mailList.forEach(function(to, i) {
+  // mailList.forEach(function (to, i) {
     var opts = {
-    from: op.from || config.mail.from,
-    subject: op.subject,
-    markdown: op.text,
-    to: to,
-    attachments: op.attachments || []
-  }
-    console.log(opts.from+"=="+opts.to+"=="+opts.subject);
-
-  
-      transporter.sendMail(opts, function(err, info) {
-    if(err) {
-      console.error(err)
+      from: op.from || config.mail.from,
+      subject: op.subject,
+      markdown: op.text,
+      to: mailList,
+      attachments: op.attachments || []
     }
-    console.log('Mail sent', info)
-  })
-    
-  });
-  
-// console.log(opts);    
-  
+    // console.log(opts.from + "==" + opts.to + "==" + opts.subject);
 
-  
+
+    transporter.sendMail(opts, function (err, info) {
+      if (err) {
+        console.error(err)
+      }
+      console.log('Mail sent', info)
+    })
+
+  // });
+
+  // console.log(opts);    
+
+
+
 }
 
 /**
@@ -72,12 +72,12 @@ function sendMail(opts) {
 function processQueue() {
   var l = queue.length
 
-  if(l == 0) {
+  if (l == 0) {
     return;
   }
 
   //just one?
-  if(l === 1) {
+  if (l === 1) {
     return sendMail(queue[0])
   }
 
@@ -87,23 +87,23 @@ function processQueue() {
 
   var subject = compile(config.multiple_subject, queue[0])
 
-  for(var i in queue) {
+  for (var i in queue) {
     text += queue[i].text
 
-    if(config.attach_logs) {
+    if (config.attach_logs) {
 
       //don't attach twice the same file
-      for(var j in queue[i].attachments) {
+      for (var j in queue[i].attachments) {
         var has = false
 
-        for(var a in attachments) {
-          if(attachments[a].path == queue[i].attachments[j].path) {
+        for (var a in attachments) {
+          if (attachments[a].path == queue[i].attachments[j].path) {
             has = true
             break;
           }
         }
 
-        if(has === false) {
+        if (has === false) {
           attachments.push(queue[i].attachments[j])
         }
       }
@@ -120,20 +120,20 @@ function processQueue() {
   queue.length = 0
 }
 
-pm2.launchBus(function(err, bus) {
+pm2.launchBus(function (err, bus) {
 
-  if(err) {
+  if (err) {
     throw err
   }
 
-  bus.on('process:event', function(e) {
+  bus.on('process:event', function (e) {
 
-    if(e.manually === true) {
+    if (e.manually === true) {
       return;
     }
 
     //it's an event we should watch
-    if(~config.events.indexOf(e.event)) {
+    if (~config.events.indexOf(e.event)) {
 
       e.date = new Date(e.at).toString()
 
@@ -144,20 +144,20 @@ pm2.launchBus(function(err, bus) {
       })
 
       //should we add logs?
-      if(config.attach_logs) {
+      if (config.attach_logs) {
         e.attachments = []
-        ;['pm_out_log_path', 'pm_err_log_path']
-        .forEach(function(log) {
-          e.attachments.push({
-            filename: p.basename(e.process[log]),
-            path: e.process[log]
-          })
-        })
+          ;['pm_out_log_path', 'pm_err_log_path']
+            .forEach(function (log) {
+              e.attachments.push({
+                filename: p.basename(e.process[log]),
+                path: e.process[log]
+              })
+            })
       }
 
       queue.push(e)
 
-      if(timeout) {
+      if (timeout) {
         clearTimeout(timeout)
       }
 
@@ -165,7 +165,7 @@ pm2.launchBus(function(err, bus) {
     }
   })
 
-  bus.on('pm2:kill', function() {
+  bus.on('pm2:kill', function () {
     console.error('PM2 is beeing killed')
   })
 })
