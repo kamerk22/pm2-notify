@@ -1,0 +1,24 @@
+{
+    "apps": [
+        {
+            "name": "pm2-notify",
+            "script": "index.js",
+            "env": {
+                "COMMON_ENV_VAR": "true"
+            },
+            "env_production": {
+                "NODE_ENV": "production"
+            }
+        }
+    ],
+    "deploy": {
+        "production": {
+            "user": "WebMob",
+            "host": "localhost",
+            "repo": "https://github.com/kamerk22/pm2-notify.git",
+            "ref": "origin/master",
+            "path": "/var/www/pm2-notify",
+            "post-deploy": "npm install && pm2 startOrRestart ecosystempm2.json --env production"
+        }
+    }
+}

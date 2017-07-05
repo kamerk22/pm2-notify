@@ -5,7 +5,7 @@ var markdown = require('nodemailer-markdown').markdown
 var config = require('yamljs').load(__dirname + '/config.yml')
 var _ = require('lodash.template')
 var template = require('fs').readFileSync(config.template)
-// var async = require('async')
+var async = require('async')
 var util = require('util')
 var p = require('path')
 
